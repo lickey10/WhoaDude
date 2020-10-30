@@ -5,13 +5,15 @@ public class ZoomSlideControls : MonoBehaviour {
 	private GameObject[] cameraTargets;
 	//scroll main texture based on time
 	
-	float scrollSpeed = 2.5f;
+	public float scrollSpeed = 2.5f;
 	float offset = 0f;
 	float rotate = 0f;
 	bool movingRight = true;
+    public Texture[] backgroundTextures;
+    private Texture currentBackground;
 
-	// The minimum field of view value we want to zoom to
-	public float MinFov = 10.0f;
+    // The minimum field of view value we want to zoom to
+    public float MinFov = 10.0f;
 	
 	// The maximum field of view value we want to zoom to
 	public float MaxFov = 60.0f;
@@ -20,17 +22,33 @@ public class ZoomSlideControls : MonoBehaviour {
 	void Start () {
 		cameraTargets = GameObject.FindGameObjectsWithTag("CameraTarget");
 
-//		foreach(GameObject cameraTarget in cameraTargets)
-//			cameraTarget.GetComponent<Renderer>().material.mainTexture.wrapMode = TextureWrapMode.Clamp;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		if(offset > 1)
-			movingRight = false;
+        setImage();
 
-		if(offset < -1)
-			movingRight = true;
+        //		foreach(GameObject cameraTarget in cameraTargets)
+        //			cameraTarget.GetComponent<Renderer>().material.mainTexture.wrapMode = TextureWrapMode.Clamp;
+    }
+
+    // Update is called once per frame
+    void Update() {
+        if (offset > 1)
+            movingRight = false;
+
+        if (offset < -1)
+        {
+            movingRight = true;
+
+            setImage();
+        }
+
+        if (offset > 1.3)
+        {
+            movingRight = true;
+
+            setImage();
+        }
+
+        if (offset < -1.3)
+            movingRight = false;
 
 		if(movingRight)
 			offset+= (Time.deltaTime*scrollSpeed)/10.0f;
@@ -52,6 +70,26 @@ public class ZoomSlideControls : MonoBehaviour {
 		Lean.LeanTouch.OnSoloDrag -= OnSoloDrag;
 		Lean.LeanTouch.OnPinch -= OnPinch;
 	}
+
+    private void setImage()
+    {
+        if (backgroundTextures.Length > 0)
+            currentBackground = backgroundTextures[Random.Range(0, backgroundTextures.Length - 1)];
+
+        foreach (GameObject cameraTarget in cameraTargets)
+        {
+            cameraTarget.GetComponent<Renderer>().material.mainTexture = currentBackground;
+
+            //			if(x < 6)//the first set of squares
+            //			{
+            cameraTarget.GetComponent<Renderer>().material.SetTextureOffset("_MainTex", new Vector2(-.5f, -.5f));
+            //			}
+            //			else
+            //			{
+            //				CameraTargets[x].GetComponent<Renderer>().material.SetTextureOffset("_MainTex",new Vector2(.25f,.25f));
+            //			}
+        }
+    }
 
 	public void OnSoloDrag(Vector2 pixels)
 	{

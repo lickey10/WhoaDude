@@ -21,6 +21,7 @@ public class webcamClass : MonoBehaviour {
 	// For photo varibles
 	//public Texture2D heightmap;
 	public Vector3 size = new Vector3(100, 10, 100);
+    
 
 	// Use this for initialization
 	void Start () {
@@ -28,8 +29,11 @@ public class webcamClass : MonoBehaviour {
 		_SavePath = Application.persistentDataPath +"/";
 		sw = new System.Diagnostics.Stopwatch();
 
+        cameraTargets = GameObject.FindGameObjectsWithTag("CameraTarget");
 
-		# if UNITY_WEBPLAYER
+        
+
+#if UNITY_WEBPLAYER
 			Application.RequestUserAuthorization (UserAuthorization.WebCam | UserAuthorization.Microphone);
 
 			if (Application.HasUserAuthorization(UserAuthorization.WebCam | UserAuthorization.Microphone)) 
@@ -52,9 +56,9 @@ public class webcamClass : MonoBehaviour {
 	//			} else {
 	//				resultString = "no permission!";
 			}
-		#endif
+#endif
 
-		#if UNITY_ANDROID
+#if UNITY_ANDROID
 		androidPhotoGalleryHelperClass = new AndroidPhotoGalleryHelperClass();
 
 		if(_SavePath.ToLower().Contains("/sdcard/"))
@@ -64,46 +68,77 @@ public class webcamClass : MonoBehaviour {
 		}
 
 			startWebcam();
-		#endif
-	}
+#endif
+    }
 
 	void Update()
 	{
-		# if UNITY_WEBPLAYER
+        #if UNITY_WEBPLAYER
 		if (Application.HasUserAuthorization(UserAuthorization.WebCam | UserAuthorization.Microphone) && cameraTargets == null)
-			startWebcam();
-		#endif
-	}
+            updateKaleidescope
+			//startWebcam();
+        #endif
 
-	void OnGUI() {      
+        //if(backgroundTextures.Length > 0)
+        //{
+        //    //updateKaleidescope(currentBackground);
+        //}
+    }
+
+    void OnGUI() {      
 		//if (GUI.Button(new Rect(10, 70, 50, 30), "Click"))
 		//	TakeSnapshot();
 	}
 
-	private void startWebcam()
+    private void updateKaleidescope(Texture kaleidescopeTexture)
+    {
+        //foreach (GameObject cameraTarget in cameraTargets)
+        //{
+        //    cameraTarget.GetComponent<Renderer>().material.mainTexture = kaleidescopeTexture;
+
+        //    //			if(x < 6)//the first set of squares
+        //    //			{
+        //    cameraTarget.GetComponent<Renderer>().material.SetTextureOffset("_MainTex", new Vector2(-.5f, -.5f));
+        //    //			}
+        //    //			else
+        //    //			{
+        //    //				CameraTargets[x].GetComponent<Renderer>().material.SetTextureOffset("_MainTex",new Vector2(.25f,.25f));
+        //    //			}
+        //}
+
+        Vector2 changeDelta = Vector2.Scale((Time.deltaTime * new Vector2(.02f, .02f)), new Vector2(.01f, .01f));
+
+        foreach (GameObject cameraTarget in cameraTargets)
+            cameraTarget.GetComponent<Renderer>().material.SetTextureOffset("_MainTex", changeDelta);
+    }
+
+
+    private void startWebcam()
 	{
 
 		WebCamDevice[] devices = WebCamTexture.devices;
 		deviceName = devices[0].name;
 		wct = new WebCamTexture(deviceName, 400, 300, 12);
 		
-		cameraTargets = GameObject.FindGameObjectsWithTag("CameraTarget");
-		
-		foreach(GameObject cameraTarget in cameraTargets)
-		{
-			cameraTarget.GetComponent<Renderer>().material.mainTexture = wct;
-			
-			//			if(x < 6)//the first set of squares
-			//			{
-			cameraTarget.GetComponent<Renderer>().material.SetTextureOffset("_MainTex",new Vector2(-.5f,-.5f));
-			//			}
-			//			else
-			//			{
-			//				CameraTargets[x].GetComponent<Renderer>().material.SetTextureOffset("_MainTex",new Vector2(.25f,.25f));
-			//			}
-		}
-		
-		wct.Play();
+		//cameraTargets = GameObject.FindGameObjectsWithTag("CameraTarget");
+
+        //updateKaleidescope(wct);
+
+        foreach (GameObject cameraTarget in cameraTargets)
+        {
+            cameraTarget.GetComponent<Renderer>().material.mainTexture = wct;
+
+            //			if(x < 6)//the first set of squares
+            //			{
+            cameraTarget.GetComponent<Renderer>().material.SetTextureOffset("_MainTex", new Vector2(-.5f, -.5f));
+            //			}
+            //			else
+            //			{
+            //				CameraTargets[x].GetComponent<Renderer>().material.SetTextureOffset("_MainTex",new Vector2(.25f,.25f));
+            //			}
+        }
+
+        wct.Play();
 		
 		//Lean.LeanTouch.OnFingerHeldDown += OnFingerHeldDown;
 
